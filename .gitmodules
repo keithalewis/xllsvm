@@ -1,3 +1,6 @@
 [submodule "xll12"]
 	path = xll12
 	url = https://github.com/keithalewis/xll12
+[submodule "libsvm"]
+	path = libsvm
+	url = https://github.com/cjlin1/libsvm

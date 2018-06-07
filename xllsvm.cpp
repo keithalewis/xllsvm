@@ -18,6 +18,27 @@ XLL_ENUM_DOC(RBF, KERNEL_RBF, CATEGORY, L"description", L"documentation");
 XLL_ENUM_DOC(SIGMOID, KERNEL_SIGMOID, CATEGORY, L"description", L"documentation");
 XLL_ENUM_DOC(PRECOMPUTED, KERNEL_PRECOMPUTED, CATEGORY, L"description", L"documentation");
 
+AddIn xai_svm_problem(
+    Function(XLL_HANDLE, L"?xll_svm_problem", L"SVM.PROBLEM")
+    .Arg(XLL_LPOPER, L"plus", L"training vectors for +1")
+    .Arg(XLL_LPXLOPER, L"minus", L"training vectors for -1")
+    .Category(CATEGORY)
+    .FunctionHelp(L"Dense arrays of training data.")
+);
+HANDLEX WINAPI xll_svm_problem(LPXLOPER p, LPXLOPER m)
+{
+#pragma XLLEXPORT
+    handlex h;
+
+    try {
+        ensure(p != m);
+    }
+    catch (const std::exception& ex) {
+        XLL_ERROR(ex.what());
+    }
+
+    return h;
+}
 
 // Information Excel needs to register add-in.
 AddIn xai_function(

@@ -1,4 +1,5 @@
 // xllsvm.h - Support vector machine add-in.
+#include <vector>
 #include "libsvm/svm.h"
 #include "xll12/xll/xll.h"
 
@@ -34,6 +35,25 @@ namespace svm {
         )
             : svm_parameter{svm_type, kernel_type, degree, gamma, coef0, cache_size, eps, C, nr_weight, weight_label, weight, nu, p, shrinking, probability}
         { }
+        parameter(const parameter&) = delete;
+        parameter& operator=(const parameter&) = delete;
+        ~parameter()
+        {
+            svm_destroy_param(this);
+        }
+    };
+
+    struct node : public svm_node {
+        node()
+            : svm_node{ -1, 0 }
+        { }
+        node(int index, double value)
+            : svm_node{ index, value }
+        { }
+    };
+
+    struct model : public svm_model {
+
     };
 
 } // namespace svm

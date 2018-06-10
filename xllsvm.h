@@ -10,6 +10,32 @@
 
 namespace svm {
 
+    class problem : public svm_problem {
+        std::vector<double> y;
+        std::vector<std::vector<svm_node>> x;
+    public:
+        // xs is array of index, node pairs
+        template<class XS>
+        problem& push_back(double y, XS xs)
+        {
+            // ensure (y == 1 || y == -1);
+            this->y.push_back(y);
+            std::vector<node> x;
+            for (int i = 0; i + 1 < size(xs); i += 2) {
+                x.push_back(svm_node{index(xs, i), index(xs, i + 1)});
+            }
+            x.push_back(svm_node{-1,0}); // terminator node
+            this->xs.emplace_back(x);
+
+            // fix up pointers
+            l = this->y.size();
+            y = this->y.data();
+            x = this->x.data[0].data();
+
+            return *this;
+        }
+    };
+
     struct parameter : public svm_parameter {
         //parameter()
         //    : svm_parameter{ C_SVC, RBF, 3, 0, 0, 100, 1e-3, 1, 0, nullptr, nullptr, 0.5, 0.1, 1, 0 }
@@ -42,18 +68,10 @@ namespace svm {
             svm_destroy_param(this);
         }
     };
-
-    struct node : public svm_node {
-        node()
-            : svm_node{ -1, 0 }
+    class model : public svm_model {
+    public:
+        model()
         { }
-        node(int index, double value)
-            : svm_node{ index, value }
-        { }
-    };
-
-    struct model : public svm_model {
-
     };
 
 } // namespace svm

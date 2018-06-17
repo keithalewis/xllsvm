@@ -20,17 +20,31 @@ XLL_ENUM_DOC(PRECOMPUTED, KERNEL_PRECOMPUTED, CATEGORY, L"description", L"docume
 
 AddIn xai_svm_problem(
     Function(XLL_HANDLE, L"?xll_svm_problem", L"SVM.PROBLEM")
-    .Arg(XLL_LPXLOPER, L"data", L"range")
+    .Arg(XLL_FP, L"y", L"is the classification vector.")
+    .Arg(XLL_LPOPER, L"data", L"range")
     .Category(CATEGORY)
     .FunctionHelp(L"Arrays of training data.")
 );
-HANDLEX WINAPI xll_svm_problem(LPXLOPER pdata)
+HANDLEX WINAPI xll_svm_problem(_FP12* py, LPOPER12 pdata)
 {
 #pragma XLLEXPORT
     handlex h;
 
     try {
-        pdata = pdata;
+        ensure(pdata->xltype == xltypeMulti);
+        RW rw = pdata->val.array.rows;
+        COL col = pdata->val.array.columns;
+        ensure(size(*py) == rw);
+
+        handle<svm::problem> h_(new svm::problem(size(*py), begin(*py)));
+
+        for (int i = 0; i < rw; ++i) {
+            for (int j = 0; j < col; ++j) {
+                h_->push_back(i, j);
+            }
+        }
+
+        h = h_.get();
     }
     catch (const std::exception& ex) {
         XLL_ERROR(ex.what());

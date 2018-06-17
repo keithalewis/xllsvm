@@ -11,26 +11,44 @@
 namespace svm {
 
     class problem : public svm_problem {
-        std::vector<double> y;
-        std::vector<std::vector<svm_node>> x;
+        std::vector<double> y_;
+        std::vector<svm_node> x_;
+        std::vector<svm_node*> px_;
     public:
-        // xs is array of index, node pairs
-        template<class XS>
-        problem& push_back(double y, XS xs)
+        problem()
+        { }
+        problem(size_t l, const double* y)
+            : y_(y, y + l)
         {
-            // ensure (y == 1 || y == -1);
-            this->y.push_back(y);
-            std::vector<node> x;
-            for (int i = 0; i + 1 < size(xs); i += 2) {
-                x.push_back(svm_node{index(xs, i), index(xs, i + 1)});
-            }
-            x.push_back(svm_node{-1,0}); // terminator node
-            this->xs.emplace_back(x);
+            l = y_.size();
+            y = y_.data();
+        }
+        // Sparse vectors with index = -1 indicating end
+        // Push index -1 twice to terminate
+        problem& push_back(int index, double value)
+        {
+            static std::vector<svm_node> xs;
 
-            // fix up pointers
-            l = this->y.size();
-            y = this->y.data();
-            x = this->x.data[0].data();
+            if (index == -1 && xs.size() == 0 && x_.size() != 0) {
+                // pushed (-1, ?) twice in a row
+                ensure(l == static_cast<int>(x_.size()));
+                // fix up the goofy data structure
+                px_.push_back(&x_[0]);
+                for (size_t i = 0; i + 1 < x_.size(); ++i) {
+                    if (x_[i].index == -1) {
+                        px_.push_back(&x_[i + 1]);
+                    }
+                }
+                x = &px_[0];
+                xs.resize(0);
+            }
+            else {
+                xs.push_back(svm_node{ index, value });
+                if (index == -1) {
+                    x_.emplace_back(xs);
+                    xs.resize(0);
+                }
+            }
 
             return *this;
         }
